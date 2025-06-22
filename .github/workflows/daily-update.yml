@@ -3,21 +3,26 @@ name: Daily Commit
 on:
   schedule:
     - cron: '20 5 * * *'  # Runs daily at 5:20 AM UTC
-  workflow_dispatch:       # Allows manual trigger for testing
+  workflow_dispatch:       # Allows manual trigger
 
 jobs:
   daily-commit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the code
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false  # Required to override default GITHUB_TOKEN
 
-      - name: Make daily commit - 24f1001384@ds.study.iitm.ac.in
+      - name: Make daily update file
         run: |
-          echo "Last updated: $(date -u)" > last_update.txt
-          git config user.email "24f1001384@ds.study.iitm.ac.in"
-          git config user.name "DevSync Bot"
+          echo "Updated at $(date -u)" > last_update.txt
+
+      - name: Commit changes - 24f1001384@ds.study.iitm.ac.in
+        run: |
+          git config --global user.email "24f1001384@ds.study.iitm.ac.in"
+          git config --global user.name "DevSync Bot"
           git add last_update.txt
-          git commit -m "Daily update - $(date -u)" || echo "No changes to commit"
-          git push
+          git commit -m "Daily update at $(date -u)" || echo "No changes to commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
